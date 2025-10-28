@@ -23,8 +23,23 @@ if "page" not in st.session_state:
 # --- Initialize session ---
 if "questions" not in st.session_state:
     st.session_state.questions = questions.copy()
+if "next_id" not in st.session_state:
+    st.session_state.next_id = len(st.session_state.questions) + 1
 
-
+def add_new_question():
+    """Add a new question dynamically."""
+    new_text = st.session_state.new_question_text.strip()
+    if new_text:
+        new_q = {"id": st.session_state.next_id, "question_text": new_text}
+        st.session_state.questions = np.append(
+                        st.session_state.questions,
+                        np.array([new_q])
+)
+        st.session_state.next_id += 1
+        st.session_state.new_question_text = ""  # clear input
+        st.toast(f"➕ Added new question: '{new_text}'")
+    else:
+        st.warning("Please enter a valid question before adding.")
 # -------------------------------
 # ✅ Isolated business logic
 # -------------------------------
@@ -107,7 +122,39 @@ if st.session_state.page == "Home":
 
         st.write(f"📝 Current text: **{st.session_state.questions[idx]['question_text']}**")
         st.divider()
+    # -------------------------------
+# ➕ Add new question section
+# -------------------------------
+    # Temporary key for input
+    input_key = "temp_new_question"
 
+    # Text input
+    new_question_text = st.text_input(
+        "Enter new question:",
+        value="",
+        key=input_key,
+        placeholder="Type a new question here..."
+    )
+
+    # Add button
+    if st.button("➕ Add Question"):
+        if new_question_text.strip():
+            # Append new question to session
+            st.session_state.questions = np.append(
+                st.session_state.questions,
+                np.array([{
+                    "id": st.session_state.next_id,
+                    "question_text": new_question_text.strip()
+                }])
+            )
+            st.session_state.next_id += 1
+
+            
+            st.toast(f"Added question: '{new_question_text.strip()}'")
+        else:
+            st.warning("Please enter a valid question.")
+
+        st.write("---")
     # ----------------------------------------------------
     # 🔁 Render all questions
     # ----------------------------------------------------
